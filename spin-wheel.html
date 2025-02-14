@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spin & Win</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        #wheel-container { position: relative; width: 300px; margin: auto; }
+        #wheel { width: 300px; height: 300px; background: url('https://i.imgur.com/qiPU8OC.png') no-repeat center; background-size: cover; border-radius: 50%; transition: transform 4s ease-out; }
+        #spinBtn { margin-top: 20px; padding: 10px 20px; font-size: 16px; background: #28a745; color: white; border: none; cursor: pointer; }
+        #form-container { margin-top: 20px; display: none; }
+        input, button { display: block; width: 80%; margin: 10px auto; padding: 10px; font-size: 16px; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2>🎉 Spin & Win a Reward! 🎉</h2>
+
+    <div id="wheel-container">
+        <div id="wheel"></div>
+    </div>
+    <button id="spinBtn" onclick="spinWheel()">SPIN</button>
+
+    <div id="result" style="margin-top: 20px; font-size: 18px;"></div>
+
+    <div id="form-container">
+        <h3>🎁 Claim Your Reward!</h3>
+        <form id="form" onsubmit="submitForm(event)">
+            <input type="email" id="email" name="email" placeholder="Enter your email" required>
+            <input type="text" id="name" name="name" placeholder="Enter your name" required>
+            <input type="text" id="phone" name="phone" placeholder="Enter your phone number" required>
+            <input type="hidden" id="reward" name="reward">
+            <button type="submit">Claim Now</button>
+        </form>
+    </div>
+
+    <script>
+        let spinning = false;
+        let rewards = ["French Fries", "Karaage", "Crisby Bun", "Honey Lemon", "Saba Fish", "Brown Sugar Milk Tea"];
+        let selectedReward = "";
+
+        function spinWheel() {
+            if (spinning) return;
+            spinning = true;
+
+            let randomDegree = 360 * 5 + Math.floor(Math.random() * 360); 
+            document.getElementById("wheel").style.transform = `rotate(${randomDegree}deg)`;
+
+            setTimeout(() => {
+                spinning = false;
+                let index = Math.floor(Math.random() * rewards.length);
+                selectedReward = rewards[index];
+
+                document.getElementById("result").innerHTML = `🎉 You won: <b>${selectedReward}</b>!`;
+                document.getElementById("reward").value = selectedReward;
+                document.getElementById("form-container").style.display = "block";
+            }, 4000); 
+        }
+
+        function submitForm(event) {
+            event.preventDefault();
+            
+            let email = document.getElementById("email").value;
+            let name = document.getElementById("name").value;
+            let phone = document.getElementById("phone").value;
+            let reward = selectedReward;
+
+            if (!email || !name || !phone || !reward) {
+                alert("⚠ Please fill in all details before submitting!");
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append("email", email);
+            formData.append("name", name);
+            formData.append("phone", phone);
+            formData.append("reward", reward);
+
+            fetch("https://script.google.com/macros/s/AKfycbwkR8-FxMk9mY4S2NDnXc6Aa9-IzIFVvEkRaqCo5Uzg_A5ibZ5PSZfYHIVTnk_GYdg/exec", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(new FormData(document.getElementById("form"))).toString()
+})
+.then(response => response.text())
+.then(data => {
+    if (data.includes("Success")) {
+        alert("Submission successful!");
+    } else {
+        alert("Error: " + data);
+    }
+})
+.catch(error => alert("Error: " + error));
+
+        }
+    </script>
+
+</body>
+</html>
